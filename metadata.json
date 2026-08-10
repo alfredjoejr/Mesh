@@ -1,0 +1,6 @@
+{
+  "name": "iGlass Chat",
+  "description": "An iOS-styled glassmorphism chat application frontend.",
+  "requestFramePermissions": ["publickey-credentials-get", "publickey-credentials-create"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

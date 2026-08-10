@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/40 backdrop-blur-[40px] border border-white/40 rounded-[40px] shadow-2xl;
+  }
+  
+  .glass-sidebar {
+    @apply border-r border-white/20;
+  }
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
