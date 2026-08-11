@@ -14,8 +14,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Middleware for parsing JSON requests
-  app.use(express.json());
+  // Middleware for parsing JSON requests (with 10mb limit for avatar uploads)
+  app.use(express.json({ limit: '10mb' }));
 
   // API routes go here FIRST
   app.get("/api/health", (req, res) => {

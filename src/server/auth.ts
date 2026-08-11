@@ -2,9 +2,10 @@ import { Router } from 'express';
 import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from '@simplewebauthn/server';
 import { db } from '../db';
 import { users, passkeys } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
+import { uploadAvatar } from './cloudinary';
 
 const router = Router();
 const rpName = 'iGlass Chat';
@@ -78,11 +79,16 @@ router.post('/register-passkey-user', async (req, res) => {
 
 // Update Profile (email, avatar, regenerate chatKey)
 router.post('/profile', async (req, res) => {
-  const { userId, email, avatar, regenerateChatKey } = req.body;
-  if (!userId) return res.status(400).json({ error: 'Missing userId' });
+  const { userId, username, email, avatar, regenerateChatKey } = req.body;
+  if (!userId && !username) return res.status(400).json({ error: 'Missing userId or username' });
 
-  const userRecord = await db.query.users.findFirst({ where: eq(users.id, userId) });
-  if (!userRecord) return res.status(404).json({ error: 'User not found' });
+  let userRecord = await db.query.users.findFirst({
+    where: or(
+      userId ? eq(users.id, userId) : undefined,
+      username ? eq(users.username, username) : undefined
+    )
+  });
+  if (!userRecord) return res.status(404).json({ error: 'User not found in database' });
 
   const updates: Record<string, any> = {};
 
@@ -90,8 +96,21 @@ router.post('/profile', async (req, res) => {
     updates.email = email.trim();
   }
 
-  if (avatar !== undefined) {
-    updates.avatar = avatar;
+  if (avatar !== undefined && avatar !== null) {
+    // If avatar is a base64 data URL, upload to Cloudinary server-side (signed)
+    // This uses a deterministic public_id so old avatars are automatically replaced
+    if (avatar.startsWith('data:')) {
+      try {
+        const cloudinaryUrl = await uploadAvatar(userRecord.id as string, avatar);
+        updates.avatar = cloudinaryUrl;
+      } catch (err: any) {
+        console.error('Cloudinary server upload failed:', err.message);
+        // Still save the base64 as fallback
+        updates.avatar = avatar;
+      }
+    } else {
+      updates.avatar = avatar;
+    }
   }
 
   if (regenerateChatKey) {
@@ -99,10 +118,10 @@ router.post('/profile', async (req, res) => {
   }
 
   if (Object.keys(updates).length > 0) {
-    await db.update(users).set(updates).where(eq(users.id, userId));
+    await db.update(users).set(updates).where(eq(users.id, userRecord.id));
   }
 
-  const updatedUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const updatedUser = await db.query.users.findFirst({ where: eq(users.id, userRecord.id) });
   res.json({
     success: true,
     user: {

@@ -42,46 +42,10 @@ export default function ProfileModal({ currentUser, onClose, onUpdateUser }: Pro
     }
   };
 
-  const uploadToCloudinary = async (base64Data: string): Promise<string> => {
-    const cloudName = (import.meta as any).env?.VITE_CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = (import.meta as any).env?.VITE_CLOUDINARY_UPLOAD_PRESET || process.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-    if (cloudName && uploadPreset) {
-      try {
-        const formData = new FormData();
-        formData.append('file', base64Data);
-        formData.append('upload_preset', uploadPreset);
-
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await res.json();
-        if (data.secure_url) {
-          return data.secure_url;
-        }
-      } catch (err) {
-        console.warn('Cloudinary upload failed, falling back to base64 data URL', err);
-      }
-    }
-    // Fallback if Cloudinary is not configured or fails
-    return base64Data;
-  };
-
-  const handleCropComplete = async (croppedDataUrl: string) => {
+  const handleCropComplete = (croppedDataUrl: string) => {
     setSelectedImageSrc(null);
-    setSaving(true);
-    setError('');
-
-    try {
-      const avatarUrl = await uploadToCloudinary(croppedDataUrl);
-      setAvatar(avatarUrl);
-    } catch (err: any) {
-      setError('Failed to process image');
-    } finally {
-      setSaving(false);
-    }
+    // Store the cropped base64 locally — server will upload to Cloudinary on save
+    setAvatar(croppedDataUrl);
   };
 
   const handleSaveProfile = async (regenerateKey = false) => {
@@ -95,14 +59,17 @@ export default function ProfileModal({ currentUser, onClose, onUpdateUser }: Pro
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: currentUser.id,
+          username: currentUser.username,
           email: email.trim(),
           avatar: avatar,
           regenerateChatKey: regenerateKey,
         }),
       });
 
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        throw new Error(data?.error || `Failed to update profile (Server error ${res.status})`);
+      }
 
       if (data.user) {
         setChatKey(data.user.chatKey);
