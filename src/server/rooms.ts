@@ -6,11 +6,11 @@
  */
 
 import { Router } from 'express';
-import { db } from '../db';
+import { db } from '../db/index.js';
 import {
   confidentialRooms, roomMembers, roomMessages,
   fingerprintMaps, leakReports, users
-} from '../db/schema';
+} from '../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 import {

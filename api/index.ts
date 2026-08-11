@@ -17,10 +17,10 @@ let bootError: any = null;
 
 const bootApp = async () => {
   try {
-    const authRouter = (await import('../src/server/auth')).default;
-    const messagesRouter = (await import('../src/server/messages')).default;
-    const contactsRouter = (await import('../src/server/contacts')).default;
-    const roomsRouter = (await import('../src/server/rooms')).default;
+    const authRouter = (await import('../src/server/auth.js')).default;
+    const messagesRouter = (await import('../src/server/messages.js')).default;
+    const contactsRouter = (await import('../src/server/contacts.js')).default;
+    const roomsRouter = (await import('../src/server/rooms.js')).default;
 
     app.use('/api/auth', authRouter);
     app.use('/auth', authRouter);

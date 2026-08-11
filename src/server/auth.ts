@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from '@simplewebauthn/server';
-import { db } from '../db';
-import { users, passkeys } from '../db/schema';
+import { db } from '../db/index.js';
+import { users, passkeys } from '../db/schema.js';
 import { eq, or } from 'drizzle-orm';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { uploadAvatar } from './cloudinary';
+import { uploadAvatar } from './cloudinary.js';
 
 const router = Router();
 const rpName = 'iGlass Chat';
