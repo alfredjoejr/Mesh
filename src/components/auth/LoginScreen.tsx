@@ -163,16 +163,16 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="w-full bg-white/80 backdrop-blur-2xl rounded-[32px] shadow-[0_32px_64px_rgba(0,0,0,0.15)] border border-white p-8 sm:p-10 flex flex-col items-center"
+      className="w-full bg-white/80 backdrop-blur-2xl rounded-[32px] shadow-[0_32px_64px_rgba(0,0,0,0.15)] border border-white p-6 sm:p-8 flex flex-col items-center max-h-[90vh] overflow-y-auto"
     >
-      <div className="w-20 h-20 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-2xl shadow-xl flex items-center justify-center mb-6">
-        <ShieldCheck size={40} className="text-white" strokeWidth={2} />
+      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-2xl shadow-xl flex items-center justify-center mb-4 sm:mb-6 flex-shrink-0">
+        <ShieldCheck size={36} className="text-white" strokeWidth={2} />
       </div>
       
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
         {isLogin ? 'Access Portal' : 'Initialize Link'}
       </h1>
-      <p className="text-sm text-gray-500 mb-8 text-center">
+      <p className="text-xs sm:text-sm text-gray-500 mb-6 text-center">
         {isLogin ? 'Authenticate to access encrypted messages.' : 'Create your end-to-end encrypted profile to begin.'}
       </p>
 
