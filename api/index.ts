@@ -43,4 +43,4 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 // Export the Express API for Vercel serverless functions
-export default app;
+module.exports = app;

@@ -27,22 +27,31 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     return 'Passkey';
   };
 
+  const safeJsonFetch = async (url: string, options?: any) => {
+    const res = await fetch(url, options);
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      throw new Error(`Server error (${res.status}): ${text.slice(0, 100)}`);
+    }
+    return res.json();
+  };
+
   const handleFaceIdLogin = async () => {
     setError('');
     try {
-      const resp = await fetch('/api/auth/generate-authentication-options', {
+      const options = await safeJsonFetch('/api/auth/generate-authentication-options', {
         method: 'POST',
       });
-      const options = await resp.json();
       if (options.error) throw new Error(options.error);
 
       const authResp = await startAuthentication(options);
-      const verifyResp = await fetch('/api/auth/verify-authentication', {
+      
+      const verification = await safeJsonFetch('/api/auth/verify-authentication', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ response: authResp, challenge: options.challenge }),
       });
-      const verification = await verifyResp.json();
       
       if (verification.verified && verification.user) {
         onLogin(verification.user);
@@ -56,29 +65,26 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
   const handleRegisterPasskey = async (username: string, email: string) => {
     try {
-      const regResp = await fetch('/api/auth/register-passkey-user', {
+      const regData = await safeJsonFetch('/api/auth/register-passkey-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email })
       });
-      const regData = await regResp.json();
       if (regData.error) throw new Error(regData.error);
 
-      const optResp = await fetch('/api/auth/generate-registration-options', {
+      const options = await safeJsonFetch('/api/auth/generate-registration-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
       });
-      const options = await optResp.json();
       
       const attResp = await startRegistration(options);
       
-      const verifyResp = await fetch('/api/auth/verify-registration', {
+      const verification = await safeJsonFetch('/api/auth/verify-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, response: attResp }),
       });
-      const verification = await verifyResp.json();
       if (verification.verified) {
         onLogin(regData.user);
       } else {
