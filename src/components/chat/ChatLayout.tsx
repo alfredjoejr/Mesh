@@ -5,6 +5,8 @@ import MessageArea from './MessageArea';
 import ConfidentialRoomChat from './ConfidentialRoomChat';
 import CreateRoomModal from './CreateRoomModal';
 import ProfileModal from './ProfileModal';
+import IncomingCallModal from './IncomingCallModal';
+import { useWebRTC } from '../../hooks/useWebRTC';
 import { generateKeyPair, exportKey, encryptMessage, decryptMessage } from '../../lib/e2ee';
 
 interface ChatLayoutProps {
@@ -22,6 +24,9 @@ export default function ChatLayout({ currentUser: initialUser, onLogout }: ChatL
   const [loading, setLoading] = useState(true);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+
+  // Initialize WebRTC for this user
+  const { callState, startCall, acceptCall, rejectCall, endCall, toggleMute } = useWebRTC(currentUser);
 
   useEffect(() => {
     const initKeys = async () => {
@@ -255,6 +260,10 @@ export default function ChatLayout({ currentUser: initialUser, onLogout }: ChatL
             messages={messages[activeChatId] || []} 
             onBack={() => setActiveChatId(undefined)}
             onSendMessage={handleSendMessage}
+            callState={callState}
+            onStartCall={startCall}
+            onEndCall={endCall}
+            onToggleMute={toggleMute}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-transparent">
@@ -288,6 +297,15 @@ export default function ChatLayout({ currentUser: initialUser, onLogout }: ChatL
             setCurrentUser(updated);
             fetchContacts();
           }}
+        />
+      )}
+
+      {/* Incoming Call Modal (Overlay above everything) */}
+      {callState.status === 'ringing' && callState.remoteUser && (
+        <IncomingCallModal
+          caller={callState.remoteUser}
+          onAccept={acceptCall}
+          onReject={rejectCall}
         />
       )}
     </div>

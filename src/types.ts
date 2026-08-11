@@ -75,3 +75,32 @@ export interface LeakReport {
   } | null;
   createdAt: number;
 }
+
+// ── Voice Calling (WebRTC) ────────────────────────────────────────────
+
+export type CallStatus = 'idle' | 'outgoing' | 'ringing' | 'connecting' | 'active' | 'ended';
+
+export interface CallState {
+  status: CallStatus;
+  remoteUser: User | null;
+  isMuted: boolean;
+  callStartTime: number | null;
+}
+
+export type SignalType =
+  | 'register'
+  | 'call-ring'
+  | 'call-offer'
+  | 'call-answer'
+  | 'ice-candidate'
+  | 'call-reject'
+  | 'call-end';
+
+export interface CallSignal {
+  type: SignalType;
+  fromUserId: string;
+  fromUsername: string;
+  fromAvatar?: string;
+  toUserId: string;
+  payload?: any;
+}

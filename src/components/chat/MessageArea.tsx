@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, ChevronLeft, Info, Phone, Video, Paperclip } from 'lucide-react';
-import { User, Message } from '../../types';
+import { User, Message, CallState } from '../../types';
+import ActiveCallOverlay from './ActiveCallOverlay';
 
 interface MessageAreaProps {
   currentUser: User;
@@ -8,9 +9,13 @@ interface MessageAreaProps {
   messages: Message[];
   onBack: () => void;
   onSendMessage: (text: string) => void;
+  callState: CallState;
+  onStartCall: (user: User) => void;
+  onEndCall: () => void;
+  onToggleMute: () => void;
 }
 
-export default function MessageArea({ currentUser, chatUser, messages, onBack, onSendMessage }: MessageAreaProps) {
+export default function MessageArea({ currentUser, chatUser, messages, onBack, onSendMessage, callState, onStartCall, onEndCall, onToggleMute }: MessageAreaProps) {
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +37,18 @@ export default function MessageArea({ currentUser, chatUser, messages, onBack, o
 
   return (
     <div className="flex flex-col h-full relative">
+      {/* Active Call Overlay */}
+      {(callState.status === 'active' || callState.status === 'connecting' || callState.status === 'outgoing') &&
+        callState.remoteUser?.id === chatUser.id && (
+          <ActiveCallOverlay
+            remoteUser={chatUser}
+            callStartTime={callState.callStartTime}
+            isMuted={callState.isMuted}
+            isConnecting={callState.status === 'connecting' || callState.status === 'outgoing'}
+            onToggleMute={onToggleMute}
+            onEndCall={onEndCall}
+          />
+        )}
       {/* Header */}
       <div className="h-[70px] border-b border-white/20 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
@@ -59,7 +76,15 @@ export default function MessageArea({ currentUser, chatUser, messages, onBack, o
         </div>
         
         <div className="flex gap-2 sm:gap-4">
-          <button className="p-2 rounded-full hover:bg-white/20 text-blue-600 transition-colors">
+          <button
+            onClick={() => onStartCall(chatUser)}
+            disabled={callState.status !== 'idle'}
+            className={`p-2 rounded-full transition-colors ${
+              callState.status !== 'idle'
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'hover:bg-white/20 text-blue-600'
+            }`}
+          >
             <Phone size={20} strokeWidth={2} />
           </button>
           <button className="p-2 rounded-full hover:bg-white/20 text-blue-600 transition-colors hidden sm:block">
