@@ -16,8 +16,8 @@ import crypto from 'crypto';
 import {
   embedFingerprint, extractFingerprint, matchFingerprint,
   attributeLeak, generateFingerprintBits, calculateCapacity
-} from '../lib/fingerprint';
-import { generateLinguisticVariants, matchLinguisticVariant } from '../lib/fingerprint-ai';
+} from '../lib/fingerprint.js';
+import { generateLinguisticVariants, matchLinguisticVariant } from '../lib/fingerprint-ai.js';
 
 const router = Router();
 
