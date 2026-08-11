@@ -4,7 +4,7 @@ import { db } from '../db';
 import { users, passkeys } from '../db/schema';
 import { eq, or } from 'drizzle-orm';
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { uploadAvatar } from './cloudinary';
 
 const router = Router();
