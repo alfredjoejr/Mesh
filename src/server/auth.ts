@@ -8,9 +8,15 @@ import bcrypt from 'bcryptjs';
 import { uploadAvatar } from './cloudinary.js';
 
 const router = Router();
-const rpName = 'iGlass Chat';
-const rpID = process.env.VITE_APP_URL ? new URL(process.env.VITE_APP_URL).hostname : 'localhost';
-const origin = process.env.VITE_APP_URL || `http://localhost:3000`;
+const rpName = 'Mesh Chat';
+
+const getRpIdAndOrigin = (req: any) => {
+  const hostHeader = req.get('host') || 'localhost:3000';
+  const rpID = hostHeader.split(':')[0]; // Hostname without port
+  const proto = req.get('x-forwarded-proto') || (req.protocol === 'https' ? 'https' : 'http');
+  const origin = `${proto}://${hostHeader}`;
+  return { rpID, origin };
+};
 
 // Standard Registration with username, email, and password
 router.post('/register', async (req, res) => {
@@ -143,6 +149,7 @@ router.post('/generate-registration-options', async (req, res) => {
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const userPasskeys = await db.query.passkeys.findMany({ where: eq(passkeys.userId, user.id) });
+  const { rpID } = getRpIdAndOrigin(req);
 
   const options = await generateRegistrationOptions({
     rpName,
@@ -168,6 +175,8 @@ router.post('/verify-registration', async (req, res) => {
   const { username, response } = req.body;
   const user = await db.query.users.findFirst({ where: eq(users.username, username) });
   if (!user || !user.currentChallenge) return res.status(400).json({ error: 'No active challenge' });
+
+  const { rpID, origin } = getRpIdAndOrigin(req);
 
   try {
     const verification = await verifyRegistrationResponse({
@@ -205,6 +214,7 @@ router.post('/verify-registration', async (req, res) => {
 
 // Authentication (Passkey)
 router.post('/generate-authentication-options', async (req, res) => {
+  const { rpID } = getRpIdAndOrigin(req);
   const options = await generateAuthenticationOptions({
     rpID,
     userVerification: 'preferred',
@@ -217,6 +227,7 @@ router.post('/generate-authentication-options', async (req, res) => {
 
 router.post('/verify-authentication', async (req, res) => {
   const { response, challenge } = req.body;
+  const { rpID, origin } = getRpIdAndOrigin(req);
   
   const pk = await db.query.passkeys.findFirst({ where: eq(passkeys.credentialId, response.id) });
   if (!pk) return res.status(400).json({ error: 'Authenticator not found' });
