@@ -77,13 +77,8 @@ export default function MessageArea({ currentUser, chatUser, messages, onBack, o
         
         <div className="flex gap-2 sm:gap-4">
           <button
-            onClick={() => onStartCall(chatUser)}
-            disabled={callState.status !== 'idle'}
-            className={`p-2 rounded-full transition-colors ${
-              callState.status !== 'idle'
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-white/20 text-blue-600'
-            }`}
+            onClick={() => alert('Voice Calling is coming soon!')}
+            className="p-2 rounded-full hover:bg-white/20 text-blue-600 transition-colors"
           >
             <Phone size={20} strokeWidth={2} />
           </button>
