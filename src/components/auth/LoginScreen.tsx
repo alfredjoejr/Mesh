@@ -100,6 +100,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           password: formData.password 
         })
       });
+      const contentType = regResp.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await regResp.text();
+        throw new Error(`Server error (${regResp.status}): ${text.slice(0, 100)}`);
+      }
       const regData = await regResp.json();
       if (regData.error) throw new Error(regData.error);
 
@@ -120,6 +125,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           password: formData.password 
         })
       });
+      const contentType = logResp.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await logResp.text();
+        throw new Error(`Server error (${logResp.status}): ${text.slice(0, 100)}`);
+      }
       const logData = await logResp.json();
       if (logData.error) throw new Error(logData.error);
 
