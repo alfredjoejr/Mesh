@@ -1,9 +1,16 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import authRouter from '../src/server/auth.js';
+import messagesRouter from '../src/server/messages.js';
+import contactsRouter from '../src/server/contacts.js';
+import roomsRouter from '../src/server/rooms.js';
+
 // Load environment variables
 dotenv.config();
 
 const app = express();
+
+// Middleware for parsing JSON requests
 app.use(express.json({ limit: '10mb' }));
 
 // Health check
@@ -11,50 +18,29 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Vercel Express backend is running.' });
 });
 
-// Dynamically load the rest of the application so that if a module crashes on import 
-// (e.g. pg, drizzle, or bcrypt), we can catch it and return the EXACT error message to the browser!
-let bootError: any = null;
+// API routes (support both /api/xxx and /xxx in case Vercel rewrites strip /api)
+app.use('/api/auth', authRouter);
+app.use('/auth', authRouter);
 
-const bootApp = async () => {
-  try {
-    const authRouter = (await import('../src/server/auth.js')).default;
-    const messagesRouter = (await import('../src/server/messages.js')).default;
-    const contactsRouter = (await import('../src/server/contacts.js')).default;
-    const roomsRouter = (await import('../src/server/rooms.js')).default;
+app.use('/api/messages', messagesRouter);
+app.use('/messages', messagesRouter);
 
-    app.use('/api/auth', authRouter);
-    app.use('/auth', authRouter);
-    app.use('/api/messages', messagesRouter);
-    app.use('/messages', messagesRouter);
-    app.use('/api/contacts', contactsRouter);
-    app.use('/contacts', contactsRouter);
-    app.use('/api/rooms', roomsRouter);
-    app.use('/rooms', roomsRouter);
-  } catch (err) {
-    console.error("BOOT ERROR:", err);
-    bootError = err;
-  }
-};
+app.use('/api/contacts', contactsRouter);
+app.use('/contacts', contactsRouter);
 
-bootApp();
-
-// Catch-all to expose boot errors
-app.use((req, res, next) => {
-  if (bootError) {
-    return res.status(500).json({ error: `CRASH ON BOOT: ${bootError.message}\n${bootError.stack}` });
-  }
-  next();
-});
+app.use('/api/rooms', roomsRouter);
+app.use('/rooms', roomsRouter);
 
 // Catch-all 404 for API routes returning JSON
 app.use((req, res) => {
   res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
 });
 
-// Global error handler
+// Global error handler returning JSON instead of HTML 500
 app.use((err: any, req: any, res: any, next: any) => {
   console.error('Vercel API Error:', err);
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
+// Export the Express API for Vercel serverless functions
 export default app;
