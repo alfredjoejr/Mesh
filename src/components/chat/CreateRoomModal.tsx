@@ -56,14 +56,14 @@ export default function CreateRoomModal({ currentUser, contacts, onClose, onCrea
     <div className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 p-6 pb-8">
+        <div className="relative bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 p-6">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
           >
             <X size={18} />
           </button>
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <Shield size={24} className="text-white" />
             </div>
@@ -75,7 +75,7 @@ export default function CreateRoomModal({ currentUser, contacts, onClose, onCrea
         </div>
 
         {/* Info Banner */}
-        <div className="mx-4 -mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-start gap-2.5 shadow-sm">
+        <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-start gap-2.5 shadow-sm">
           <Fingerprint size={18} className="text-amber-600 mt-0.5 flex-shrink-0" />
           <p className="text-[11px] text-amber-800 leading-relaxed">
             Every message in this room is uniquely fingerprinted per recipient. If any content is leaked via screenshot or copy-paste, the source can be traced.

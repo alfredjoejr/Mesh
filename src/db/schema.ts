@@ -10,6 +10,7 @@ export const users = pgTable('users', {
   publicKey: text('public_key'), // RSA-OAEP public key for E2EE
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   lastLoginAt: timestamp('last_login_at', { withTimezone: true, mode: 'date' }),
+  avatar: text('avatar'),
 });
 
 export const contactRequests = pgTable('contact_requests', {

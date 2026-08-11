@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import MessageArea from './MessageArea';
 import ConfidentialRoomChat from './ConfidentialRoomChat';
 import CreateRoomModal from './CreateRoomModal';
+import ProfileModal from './ProfileModal';
 import { generateKeyPair, exportKey, encryptMessage, decryptMessage } from '../../lib/e2ee';
 
 interface ChatLayoutProps {
@@ -11,7 +12,8 @@ interface ChatLayoutProps {
   onLogout: () => void;
 }
 
-export default function ChatLayout({ currentUser, onLogout }: ChatLayoutProps) {
+export default function ChatLayout({ currentUser: initialUser, onLogout }: ChatLayoutProps) {
+  const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [activeChatId, setActiveChatId] = useState<string | undefined>();
   const [activeRoomId, setActiveRoomId] = useState<string | undefined>();
   const [contacts, setContacts] = useState<ChatContact[]>([]);
@@ -19,6 +21,7 @@ export default function ChatLayout({ currentUser, onLogout }: ChatLayoutProps) {
   const [rooms, setRooms] = useState<ConfidentialRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const initKeys = async () => {
@@ -218,7 +221,7 @@ export default function ChatLayout({ currentUser, onLogout }: ChatLayoutProps) {
   const showRoom = activeRoomId && activeRoom;
 
   return (
-    <div className="w-full max-w-[960px] h-[90vh] max-h-[700px] glass-panel flex overflow-hidden relative mx-auto my-auto ring-0 shadow-2xl">
+    <div className="w-full h-full glass-panel flex overflow-hidden relative ring-0 shadow-2xl rounded-2xl md:rounded-3xl">
       
       {/* Sidebar - hides on mobile if chat/room is active */}
       <div className={`w-full md:w-[320px] glass-sidebar flex-col h-full transition-all duration-300 ${(activeChatId || activeRoomId) ? 'hidden md:flex' : 'flex'}`}>
@@ -232,6 +235,7 @@ export default function ChatLayout({ currentUser, onLogout }: ChatLayoutProps) {
           activeRoomId={activeRoomId}
           onSelectRoom={handleSelectRoom}
           onCreateRoom={() => setShowCreateRoom(true)}
+          onOpenProfile={() => setShowProfile(true)}
         />
       </div>
       
@@ -272,6 +276,18 @@ export default function ChatLayout({ currentUser, onLogout }: ChatLayoutProps) {
           contacts={contacts}
           onClose={() => setShowCreateRoom(false)}
           onCreated={handleRoomCreated}
+        />
+      )}
+
+      {/* Profile Modal */}
+      {showProfile && (
+        <ProfileModal
+          currentUser={currentUser}
+          onClose={() => setShowProfile(false)}
+          onUpdateUser={(updated) => {
+            setCurrentUser(updated);
+            fetchContacts();
+          }}
         />
       )}
     </div>

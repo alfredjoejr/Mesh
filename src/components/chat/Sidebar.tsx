@@ -12,11 +12,12 @@ interface SidebarProps {
   activeRoomId?: string;
   onSelectRoom: (id: string) => void;
   onCreateRoom: () => void;
+  onOpenProfile?: () => void;
 }
 
 export default function Sidebar({
   contacts, activeChatId, onSelectChat, currentUser, onLogout,
-  rooms, activeRoomId, onSelectRoom, onCreateRoom
+  rooms, activeRoomId, onSelectRoom, onCreateRoom, onOpenProfile
 }: SidebarProps) {
   const [showNewChat, setShowNewChat] = useState(false);
   const [newUsername, setNewUsername] = useState('');
@@ -245,11 +246,21 @@ export default function Sidebar({
                   : 'hover:bg-white/20 border border-transparent'
               }`}
             >
-              <div className={`w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white text-lg font-bold border-2 ${
-                activeChatId === contact.user.id && !activeRoomId ? 'border-white/50 shadow-sm' : 'border-transparent'
-              } bg-gradient-to-tr from-orange-400 to-pink-500`}>
-                {contact.user.username.charAt(0).toUpperCase()}
-              </div>
+              {contact.user.avatar ? (
+                <img
+                  src={contact.user.avatar}
+                  alt={contact.user.username}
+                  className={`w-12 h-12 rounded-full flex-shrink-0 object-cover border-2 ${
+                    activeChatId === contact.user.id && !activeRoomId ? 'border-white/50 shadow-sm' : 'border-transparent'
+                  }`}
+                />
+              ) : (
+                <div className={`w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white text-lg font-bold border-2 ${
+                  activeChatId === contact.user.id && !activeRoomId ? 'border-white/50 shadow-sm' : 'border-transparent'
+                } bg-gradient-to-tr from-orange-400 to-pink-500`}>
+                  {contact.user.username.charAt(0).toUpperCase()}
+                </div>
+              )}
               
               <div className="flex-1 overflow-hidden">
                 <div className="flex justify-between items-baseline mb-0.5">
@@ -338,15 +349,27 @@ export default function Sidebar({
       {/* Current User Status */}
       <div className="p-4 border-t border-white/20">
         <div className="flex items-center justify-between">
-           <div className="flex items-center gap-2">
-             <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-               {currentUser.username.charAt(0).toUpperCase()}
-             </div>
-             <div>
-               <p className="text-sm font-semibold text-gray-800 leading-tight">@{currentUser.username}</p>
+           <div
+             onClick={onOpenProfile}
+             className="flex items-center gap-2.5 cursor-pointer hover:bg-white/30 p-1.5 -ml-1.5 rounded-xl transition-all flex-1 mr-2"
+             title="Click to view & edit profile"
+           >
+             {currentUser.avatar ? (
+               <img
+                 src={currentUser.avatar}
+                 alt={currentUser.username}
+                 className="w-9 h-9 rounded-full object-cover shadow-sm border border-white/60"
+               />
+             ) : (
+               <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                 {currentUser.username.charAt(0).toUpperCase()}
+               </div>
+             )}
+             <div className="overflow-hidden">
+               <p className="text-sm font-semibold text-gray-800 leading-tight truncate">@{currentUser.username}</p>
                <div className="flex items-center gap-1.5 text-[10px] font-medium text-gray-500">
                  <Key size={10} />
-                 <span>{currentUser.chatKey || 'No Key'}</span>
+                 <span className="truncate">{currentUser.chatKey || 'No Key'}</span>
                </div>
              </div>
            </div>
@@ -354,7 +377,7 @@ export default function Sidebar({
            {onLogout && (
              <button 
                onClick={onLogout}
-               className="p-2 rounded-xl bg-white/40 hover:bg-white/60 text-gray-700 transition-colors shadow-sm border border-white/50"
+               className="p-2 rounded-xl bg-white/40 hover:bg-white/60 text-gray-700 transition-colors shadow-sm border border-white/50 flex-shrink-0"
                title="Logout"
              >
                <LogOut size={16} strokeWidth={2.5} />

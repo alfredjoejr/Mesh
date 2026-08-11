@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
   await db.insert(users).values({ id, username, email, passwordHash, chatKey });
   
   userRecord = await db.query.users.findFirst({ where: eq(users.id, id) });
-  res.json({ user: { id: userRecord!.id, username: userRecord!.username, email: userRecord!.email, chatKey: userRecord!.chatKey } });
+  res.json({ user: { id: userRecord!.id, username: userRecord!.username, email: userRecord!.email, chatKey: userRecord!.chatKey, avatar: userRecord!.avatar } });
 });
 
 // Standard Login with username and password
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
     await db.update(users).set({ chatKey }).where(eq(users.id, userRecord.id));
   }
 
-  res.json({ user: { id: userRecord.id, username: userRecord.username, email: userRecord.email, chatKey } });
+  res.json({ user: { id: userRecord.id, username: userRecord.username, email: userRecord.email, chatKey, avatar: userRecord.avatar } });
 });
 
 // Utility to create a user for passkey flow if they don't exist
@@ -67,13 +67,53 @@ router.post('/register-passkey-user', async (req, res) => {
     const id = crypto.randomUUID();
     const chatKey = Math.floor(100000 + Math.random() * 900000).toString();
     await db.insert(users).values({ id, username, email, chatKey });
-    userRecord = { id, username, email, currentChallenge: null, chatKey } as any;
+    userRecord = { id, username, email, currentChallenge: null, chatKey, avatar: null } as any;
   } else if (!userRecord.chatKey) {
     const chatKey = Math.floor(100000 + Math.random() * 900000).toString();
     await db.update(users).set({ chatKey }).where(eq(users.id, userRecord.id));
     userRecord.chatKey = chatKey;
   }
-  res.json({ user: { id: userRecord!.id, username: userRecord!.username, email: userRecord!.email, chatKey: userRecord!.chatKey } });
+  res.json({ user: { id: userRecord!.id, username: userRecord!.username, email: userRecord!.email, chatKey: userRecord!.chatKey, avatar: userRecord!.avatar } });
+});
+
+// Update Profile (email, avatar, regenerate chatKey)
+router.post('/profile', async (req, res) => {
+  const { userId, email, avatar, regenerateChatKey } = req.body;
+  if (!userId) return res.status(400).json({ error: 'Missing userId' });
+
+  const userRecord = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!userRecord) return res.status(404).json({ error: 'User not found' });
+
+  const updates: Record<string, any> = {};
+
+  if (email !== undefined && email.trim() !== '') {
+    updates.email = email.trim();
+  }
+
+  if (avatar !== undefined) {
+    updates.avatar = avatar;
+  }
+
+  if (regenerateChatKey) {
+    updates.chatKey = Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(users).set(updates).where(eq(users.id, userId));
+  }
+
+  const updatedUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  res.json({
+    success: true,
+    user: {
+      id: updatedUser!.id,
+      username: updatedUser!.username,
+      email: updatedUser!.email,
+      chatKey: updatedUser!.chatKey,
+      avatar: updatedUser!.avatar,
+      publicKey: updatedUser!.publicKey
+    }
+  });
 });
 
 

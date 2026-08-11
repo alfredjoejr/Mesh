@@ -38,9 +38,17 @@ export default function MessageArea({ currentUser, chatUser, messages, onBack, o
           <button onClick={onBack} className="md:hidden p-2 -ml-2 rounded-full hover:bg-white/20 text-blue-600">
             <ChevronLeft size={24} />
           </button>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold shadow-sm">
-            {chatUser.username.charAt(0).toUpperCase()}
-          </div>
+          {chatUser.avatar ? (
+            <img
+              src={chatUser.avatar}
+              alt={chatUser.username}
+              className="w-10 h-10 rounded-full object-cover shadow-sm border border-white/60"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold shadow-sm">
+              {chatUser.username.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <div className="font-bold text-gray-800">@{chatUser.username}</div>
             <div className="text-[10px] text-green-600 font-bold uppercase tracking-widest flex items-center gap-1">

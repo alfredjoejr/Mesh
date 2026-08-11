@@ -37,7 +37,7 @@ router.get('/:userId', async (req, res) => {
 
   // Fetch user details for contacts
   const allUsers = await db.query.users.findMany();
-  const contactUsers = allUsers.filter(u => contactIds.has(u.id));
+  const contactUsers = allUsers.filter(u => contactIds.has(u.id as string));
 
   // For each user, get the last message between them and current user
   const contacts = await Promise.all(contactUsers.map(async (u) => {
@@ -52,7 +52,7 @@ router.get('/:userId', async (req, res) => {
     const lastMessage = userSpecificMsgs.length > 0 ? userSpecificMsgs[0] : null;
 
     return {
-      user: { id: u.id, username: u.username, email: u.email, chatKey: u.chatKey, publicKey: u.publicKey },
+      user: { id: u.id, username: u.username, email: u.email, chatKey: u.chatKey, publicKey: u.publicKey, avatar: u.avatar },
       lastMessage: lastMessage ? {
         id: lastMessage.id,
         senderId: lastMessage.senderId,

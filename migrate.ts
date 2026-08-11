@@ -17,6 +17,7 @@ async function migrate() {
   console.log('Connected to database');
 
   const queries = [
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT`,
     `CREATE TABLE IF NOT EXISTS confidential_rooms (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
